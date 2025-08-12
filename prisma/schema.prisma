@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String
+  plan          Plan     @default(FREE)
+  planExpiresAt DateTime?
+  resumes       Resume[]
+  coverLetters  CoverLetter[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  template  Template @default(MODERN)
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CoverLetter {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  company       String?
+  jobTitle      String?
+  jobDescription String?
+  content       String
+  createdAt     DateTime @default(now())
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum Template {
+  MODERN
+  CLASSIC
+  MINIMAL
+}
+
+
+model JobApp {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  company     String
+  location    String?
+  url         String?
+  status      JobStatus @default(APPLIED)
+  source      String?   // e.g., LinkedIn, Indeed
+  keywords    String?   // comma-separated extracted keywords
+  appliedAt   DateTime? 
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum JobStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
